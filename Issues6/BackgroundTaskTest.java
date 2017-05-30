@@ -21,36 +21,25 @@
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingQueue;
 
-import org.junit.Before;
 import org.junit.Test;
 
 public class BackgroundTaskTest {
-    CountDownLatch doneSignal;
-
-    @Before
-    public void setup() {
-        doneSignal = new CountDownLatch(1);
-    }
 
     @Test
     public void Runnableオブジェクトを渡すとバックグラウンドでrunが実行されること() throws InterruptedException {
-        StringBuffer str = new StringBuffer();
+        LinkedBlockingQueue<Integer> queue = new LinkedBlockingQueue<>(1);
 
         //スレッドに行わせる処理
         Runnable rn = () -> {
-            str.append("Process");
-            doneSignal.countDown();
+            queue.add(1);
         };
 
         BackgroundTask backgroundTask = new BackgroundTask(rn);
         backgroundTask.invoke();
 
-        //処理が終わるまで待つ
-        doneSignal.await();
-
-        //スレッドを動作させると標準出力に"Process"の文字列が出力されること
-        assertThat(str.toString(), is("Process"));
+        //スレッドを動作させると、キューに1が挿入されていること
+        assertThat(queue.take(), is(1));
     }
 }
