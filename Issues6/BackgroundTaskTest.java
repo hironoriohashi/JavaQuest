@@ -21,32 +21,41 @@
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.util.concurrent.CountDownLatch;
 
+import org.junit.Before;
 import org.junit.Test;
 
 public class BackgroundTaskTest {
+    ByteArrayOutputStream output;
+    CountDownLatch doneSignal;
 
-    @Test
-    public void Runnableオブジェクトを渡すとバックグラウンドでrunが実行されること() throws InterruptedException, ExecutionException {
+    @Before
+    public void setup() {
+        output = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(output));
 
-        Callable<Integer> rn = () -> {//スレッドに行わせる処理
-                Integer a = 0;
-            a++;
-            return a;
-        };
-
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        Future<Integer> retian = executor.submit(rn);
-        BackgroundTask backgroundTask = new BackgroundTask((Runnable) retian);
-        backgroundTask.invoke();
-
-        //スレッドでaのインクリメントが行われたかを確認する
-        assertThat(retian.get(), is(1));
+        doneSignal = new CountDownLatch(1);
     }
 
+    @Test
+    public void Runnableオブジェクトを渡すとバックグラウンドでrunが実行されること() throws Exception {
+
+        //スレッドに行わせる処理
+        Runnable rn = () -> {
+            System.out.print("Process");
+            doneSignal.countDown();
+        };
+
+        BackgroundTask backgroundTask = new BackgroundTask(rn);
+        backgroundTask.invoke();
+
+        //処理が終わるまで待つ
+        doneSignal.await();
+
+        //スレッドを動作させると標準出力に"Process"の文字列が出力されること
+        assertThat(output.toString(), is("Process"));
+    }
 }

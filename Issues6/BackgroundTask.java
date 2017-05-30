@@ -18,13 +18,13 @@
 */
 
 class BackgroundTask {
-    Thread background;
+    private Thread thread;
 
     BackgroundTask(Runnable run) {
-        background = new Thread(run);
+        thread = new Thread(run);
     }
 
     public void invoke() {
-        background.start();
+        thread.start();
     }
 }
