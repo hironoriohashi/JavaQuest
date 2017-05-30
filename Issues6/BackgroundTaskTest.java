@@ -21,31 +21,26 @@
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 import java.util.concurrent.CountDownLatch;
 
 import org.junit.Before;
 import org.junit.Test;
 
 public class BackgroundTaskTest {
-    ByteArrayOutputStream output;
     CountDownLatch doneSignal;
 
     @Before
     public void setup() {
-        output = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(output));
-
         doneSignal = new CountDownLatch(1);
     }
 
     @Test
-    public void Runnableオブジェクトを渡すとバックグラウンドでrunが実行されること() throws Exception {
+    public void Runnableオブジェクトを渡すとバックグラウンドでrunが実行されること() throws InterruptedException {
+        StringBuffer str = new StringBuffer();
 
         //スレッドに行わせる処理
         Runnable rn = () -> {
-            System.out.print("Process");
+            str.append("Process");
             doneSignal.countDown();
         };
 
@@ -56,6 +51,6 @@ public class BackgroundTaskTest {
         doneSignal.await();
 
         //スレッドを動作させると標準出力に"Process"の文字列が出力されること
-        assertThat(output.toString(), is("Process"));
+        assertThat(str.toString(), is("Process"));
     }
 }
