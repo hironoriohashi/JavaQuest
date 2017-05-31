@@ -39,7 +39,7 @@ public class BackgroundTaskTest {
         BackgroundTask backgroundTask = new BackgroundTask(rn);
         backgroundTask.invoke();
 
-        //処理を実行したスレッドが今のスレッドのIDと違うこと
+        //処理を実行したスレッドが今のスレッドの名前と違うこと
         assertThat(queue.take(), is(not(Thread.currentThread().getName())));
     }
 }
