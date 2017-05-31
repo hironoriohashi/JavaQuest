@@ -29,17 +29,17 @@ public class BackgroundTaskTest {
 
     @Test
     public void Runnableオブジェクトを渡すとバックグラウンドでrunが実行されること() throws InterruptedException {
-        LinkedBlockingQueue<Integer> queue = new LinkedBlockingQueue<>(1);
+        LinkedBlockingQueue<String> queue = new LinkedBlockingQueue<>(1);
 
         //スレッドに行わせる処理
         Runnable rn = () -> {
-            queue.add(1);
+            queue.add(Thread.currentThread().getName());
         };
 
         BackgroundTask backgroundTask = new BackgroundTask(rn);
         backgroundTask.invoke();
 
-        //スレッドを動作させると、キューに1が挿入されていること
-        assertThat(queue.take(), is(1));
+        //処理を実行したスレッドが今のスレッドのIDと違うこと
+        assertThat(queue.take(), is(not(Thread.currentThread().getName())));
     }
 }
